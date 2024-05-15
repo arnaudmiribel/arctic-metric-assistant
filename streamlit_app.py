@@ -83,6 +83,33 @@ METADATA = [
     # Add additional metrics as needed
 ]
 
+PROMPT_METADATA = [{k: v for k, v in my_dict.items() if k != 'chart_function'} for my_dict in METADATA]
+import json 
+
+
+
+DEFAULT_ASSISTANT_MESSAGE = """
+Hey! I'm your Metric Assistant. Ask me a question and I'll show you a 
+relevant metric (if existing). Some examples include "active users", 
+"retention rate"... Be creative! You can also check-out everything I 
+know from the button above.
+"""
+
+METRIC_ASSISTANT_PROMPT = f"""
+You are a metric assistant. Building upon the following metrics 
+metadata, you are asked to retrieve the most relevant 1 or 2 metrics 
+that best answer the questions you get asked from the user.
+
+You should answer the user by quoting the explicit metric name, enclosed with 
+backticks so it's easily parsable later, and also explain verbally why 
+the question matches this metric, most likely looking at the description.
+
+Metrics metadata: 
+```
+{json.dumps(PROMPT_METADATA, indent=4)}
+```
+"""
+
 def detect_backtick_enclosed_strings(text: str) -> list:
     """
     This function finds substrings enclosed between
@@ -107,7 +134,23 @@ def detect_backtick_enclosed_strings(text: str) -> list:
     return list(dict.fromkeys(inline_code_substrings))
 
 st.caption("See [blog post](https://todo) · Powered by Snowflake Cortex and Arctic.")
-st.expander("What does this assistant know?").json(METADATA)
+
+WHAT_DOES_THIS_ASSISTANT_KNOW = f"""
+Here's what the Metric Assistant is given as a starter prompt. It includes 
+instrutions as well as factual metrics metadata:
+
+### Prompt:
+{METRIC_ASSISTANT_PROMPT}
+"""
+
+@st.experimental_dialog("What does this assistant know?", width="large")
+def what_does_this_assistant_know():
+    st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
+
+if st.button("Learn more on what this assistant knows"):
+    st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
+    what_does_this_assistant_know()
+# st.expander("What does this assistant know?").json(METADATA)
 # with st.expander("Lookup all metrics"):
 #     for metric in METADATA:
 #         st.write(f"**{metric['name'].replace('_', ' ').title()}** - {metric['description']}")
@@ -128,10 +171,7 @@ os.environ['REPLICATE_API_TOKEN'] = replicate_api
 temperature = 0.3
 top_p = 0.9
 
-DEFAULT_ASSISTANT_MESSAGE = """
-Hey! I'm your Metric Assistant. Ask me a question and I'll show you a 
-relevant metric (if existing). 
-"""
+
 
 # Store LLM-generated responses
 if "messages" not in st.session_state.keys():
@@ -160,17 +200,7 @@ def get_num_tokens(prompt):
     return len(tokens)
 
 
-METRIC_ASSISTANT_PROMPT = f"""
-You are a metric assistant. Building upon the following metrics 
-metadata, you are asked to retrieve the most relevant 1 or 2 metrics 
-that best answer the questions you get asked from the user.
 
-You should answer the user by quoting the explicit metric name, enclosed with 
-backticks so it's easily parsable later, and also explain verbally why 
-the question matches this metric, most likely looking at the description.
-
-Metrics metadata: {METADATA}
-"""
 
 # Function for generating Snowflake Arctic response
 def generate_arctic_response():
