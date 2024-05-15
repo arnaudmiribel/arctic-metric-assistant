@@ -107,7 +107,7 @@ looking at the description.
 
 Metrics metadata: 
 ```
-{json.dumps(PROMPT_METADATA, indent=4)}
+{json.dumps(PROMPT_METADATA, indent=2)}
 ```
 """
 
