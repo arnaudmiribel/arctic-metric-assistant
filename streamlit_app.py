@@ -3,58 +3,146 @@ import replicate
 import os
 from transformers import AutoTokenizer
 
+# Set assistant icon to Snowflake logo
+icons = {"assistant": "./Snowflake_Logomark_blue.svg", "user": "⛷️"}
+
 # App title
 st.set_page_config(page_title="Snowflake Arctic")
 
-def main():
-    """Execution starts here."""
-    get_replicate_api_token()
-    display_sidebar_ui()
-    init_chat_history()
-    display_chat_messages()
-    get_and_process_prompt()
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import streamlit as st
 
-def get_replicate_api_token():
-    os.environ['REPLICATE_API_TOKEN'] = st.secrets['REPLICATE_API_TOKEN']
+# Helper function to generate fake data
+def generate_fake_data(metric_name, days=30, min_val=10, max_val=100, seed=None):
+    if seed is not None:
+        np.random.seed(seed)  # Ensure reproducibility
+    dates = pd.date_range(end=pd.Timestamp.today(), periods=days).tolist()
+    values = np.random.randint(min_val, max_val, size=days)
+    return pd.DataFrame({'Date': dates, metric_name: values})
 
-def display_sidebar_ui():
-    with st.sidebar:
-        st.title('Snowflake Arctic')
-        st.subheader("Adjust model parameters")
-        st.slider('temperature', min_value=0.01, max_value=5.0, value=0.3,
-                                step=0.01, key="temperature")
-        st.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01,
-                          key="top_p")
+# Visualization functions
+def user_enrollment_rate():
+    data = generate_fake_data('User Enrollment Rate', seed=1)
+    return px.line(data, x='Date', y='User Enrollment Rate')
 
-        st.button('Clear chat history', on_click=clear_chat_history)
+def course_completion_rate():
+    data = generate_fake_data('Course Completion Rate', seed=2)
+    return px.bar(data, x='Date', y='Course Completion Rate')
 
-        st.sidebar.caption('Build your own app powered by Arctic and [enter to win](https://arctic-streamlit-hackathon.devpost.com/) $10k in prizes.')
+def average_session_duration():
+    data = generate_fake_data('Average Session Duration', min_val=50, max_val=300, seed=3)
+    return px.scatter(data, x='Date', y='Average Session Duration')
 
-        st.subheader("About")
-        st.caption('Built by [Snowflake](https://snowflake.com/) to demonstrate [Snowflake Arctic](https://www.snowflake.com/blog/arctic-open-and-efficient-foundation-language-models-snowflake). App hosted on [Streamlit Community Cloud](https://streamlit.io/cloud). Model hosted by [Replicate](https://replicate.com/snowflake/snowflake-arctic-instruct).')
+def daily_active_users():
+    data = generate_fake_data('Daily Active Users', seed=4)
+    return px.area(data, x='Date', y='Daily Active Users')
 
-        # # # Uncomment to show debug info
-        # st.subheader("Debug")
-        # st.write(st.session_state)
+def retention_rate():
+    data = generate_fake_data('Retention Rate', min_val=1, max_val=100, seed=5)
+    return px.line(data, x='Date', y='Retention Rate', markers=True)
+
+def net_promoter_score():
+    data = generate_fake_data('Net Promoter Score', min_val=-100, max_val=100, seed=6)
+    return px.histogram(data, x='Net Promoter Score')
+
+METADATA = [
+    {
+        'name': 'user_enrollment_rate',
+        'description': 'Measures the number of new users enrolling in courses over time.',
+        'chart_function': user_enrollment_rate
+    },
+    {
+        'name': 'course_completion_rate',
+        'description': 'Shows the percentage of users completing their courses.',
+        'chart_function': course_completion_rate
+    },
+    {
+        'name': 'average_session_duration',
+        'description': 'Tracks the average time users spend on the platform per session.',
+        'chart_function': average_session_duration
+    },
+    {
+        'name': 'daily_active_users',
+        'description': 'Counts unique users interacting with the platform daily.',
+        'chart_function': daily_active_users
+    },
+    {
+        'name': 'retention_rate',
+        'description': 'Percentage of users who return to the platform after their first visit.',
+        'chart_function': retention_rate
+    },
+    {
+        'name': 'net_promoter_score',
+        'description': 'Measures user satisfaction and the likelihood of recommending the platform to others.',
+        'chart_function': net_promoter_score
+    }
+    # Add additional metrics as needed
+]
+
+def detect_backtick_enclosed_strings(text: str) -> list:
+    """
+    This function finds substrings enclosed between
+    backticks (`). Because the LLM is prompted to
+    enclose metric names between backticks, this is
+    then useful to identify metrics.
+
+    Args:
+        text (str): The markdown text to be parsed
+
+    Returns:
+        list: A list with unique detected inline code substrings.
+    """
+    import re
+
+    # Pattern to find substrings between backticks
+    code_pattern = r"`(.*?)`"
+
+    # Find all substrings that match the patterns
+    inline_code_substrings = re.findall(code_pattern, text)
+
+    return list(dict.fromkeys(inline_code_substrings))
+
+st.caption("**Metric Assistant** · See [blog post](https://todo) · Powered by Snowflake Cortex and Arctic.")
+st.expander("Lookup metadata").json(METADATA)
+# with st.expander("Lookup all metrics"):
+#     for metric in METADATA:
+#         st.write(f"**{metric['name'].replace('_', ' ').title()}** - {metric['description']}")
+#         st.plotly_chart(metric['chart_function'](), use_container_width=True)
+
+
+if 'REPLICATE_API_TOKEN' in st.secrets:
+    replicate_api = st.secrets['REPLICATE_API_TOKEN']
+else:
+    replicate_api = st.text_input('Enter Replicate API token:', type='password')
+    if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
+        st.warning('Please enter your Replicate API token.', icon='⚠️')
+        st.markdown("**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one.")
+
+os.environ['REPLICATE_API_TOKEN'] = replicate_api
+# temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.3, step=0.01)
+# top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
+temperature = 0.3
+top_p = 0.9
+
+DEFAULT_ASSISTANT_MESSAGE = """
+Hey! I'm your Metric Assistant. Ask me a question and I'll show you a 
+relevant metric (if existing). 
+"""
+
+# Store LLM-generated responses
+if "messages" not in st.session_state.keys():
+    st.session_state.messages = [{"role": "assistant", "content": DEFAULT_ASSISTANT_MESSAGE}]
+
+# Display or clear chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"], avatar=icons[message["role"]]):
+        st.write(message["content"])
 
 def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "Hi. I'm Arctic, a new, efficient, intelligent, and truly open language model created by Snowflake AI Research. Ask me anything."}]
-    st.session_state.chat_aborted = False
+    st.session_state.messages = [{"role": "assistant", "content": DEFAULT_ASSISTANT_MESSAGE}]
 
-def init_chat_history():
-    """Create a st.session_state.messages list to store chat messages"""
-    if "messages" not in st.session_state:
-        clear_chat_history()
-        check_safety()
-
-def display_chat_messages():
-    # Set assistant icon to Snowflake logo
-    icons = {"assistant": "./Snowflake_Logomark_blue.svg", "user": "⛷️"}
-
-    # Display the messages
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"], avatar=icons[message["role"]]):
-            st.write(message["content"])
 
 @st.cache_resource(show_spinner=False)
 def get_tokenizer():
@@ -63,64 +151,29 @@ def get_tokenizer():
     """
     return AutoTokenizer.from_pretrained("huggyllama/llama-7b")
 
-@st.cache_resource(show_spinner=False)
-def get_llamaguard_deployment():
-    return replicate.deployments.get("snowflake/llamaguard")
-
-def check_safety(disable=False) -> bool: 
-    if disable:
-        return True
-
-    # with st.spinner("Checking prompt safety ..."):
-    deployment = get_llamaguard_deployment()
-    conversation_history = st.session_state.messages
-    prediction = deployment.predictions.create(
-      input = { "prompt": f"[INST] Task: Check if there is unsafe content in 'Agent' messages in conversations according our safety policy with the below categories.\n\n<BEGIN UNSAFE CONTENT CATEGORIES>\nO1: Violence and Hate.\nShould not\n- Help people plan or engage in violence.\n- Encourage people to engage in violence.\n- Express hateful, derogatory, or demeaning sentiments against people based on sensitive personal characteristics like their race, color, religion, national origin, sexual orientation, gender, gender identity, or disability.\n- Encourage discrimination against people based on those characteristics and should not use slurs or create insults based on those characteristics.\nCan\n- Provide information on violence and discrimination.\n- Discuss the topics of hate and violence, and can discuss historical events involving violence.\nO2: Sexual Content.\nShould not\n- Engage in sexually explicit (i.e., erotic) conversations and should not encourage people to engage in sexual activities.\nCan\n- Discuss topics related to sexuality and sexual education.\n- Provide general information regarding sexual activities.\n- Provide guidance on topics related to sexual health.\nO3: Criminal Planning.\nShould not\n- Help people plan or engage in criminal activities like theft, kidnapping, or financial crimes, especially when the person indicates that they may act on the information provided to them.\n- Encourage people to engage in criminal activities or condone criminal behavior.\nCan\n- Help people understand how crimes are committed, provided that the response is not so detailed that it could be used to provide a roadmap for future crimes.\n- Help people understand how systems work that are used to prevent crimes, provided those descriptions do not provide detailed information on how to defeat those systems.\nO4: Guns and Illegal Weapons.\nShould not\n- Assist in the planning or execution of firearm or illegal weapons crimes, especially when the person indicates that they may act on the information provided to them.\n- Encourage people to engage in firearm or illegal weapons crimes or condone such behavior.\nCan\n- Discuss firearms and the arguments for and against firearm ownership.\nO5: Regulated or Controlled Substances.\nShould not\n- Encourage or assist people in the trafficking, consumption, or use of regulated or controlled substances, including but not limited to illegal drugs, tobacco, alcohol, and cannabis.\n- Assist or encourage people to create such substances when it is illegal to do so.\nCan\n- Discuss the use of regulated or controlled substances, and can provide general information on those substances (ex: what their chemical composition is and what their effects are).\n- Provide information on how those substances are manufactured, provided that the information is not so detailed as to provide step-by-step instructions for their creation.\nO6: Self-Harm.\nShould not\n- Encourage people to harm themselves.\n- Romanticize or condone self-harm or suicide.\n- Provide information regarding the methods of suicide or self-harm.\n- Provide any information or advice, other than information regarding appropriate health resources, to people who express or imply that they wish to harm themselves.\nCan\n- Provide general information regarding self-harm and suicide (ex: statistics, the mental health challenges faced by those who take these actions).\nShould\n- Provide information regarding appropriate health resources to people who imply or express the desire to harm themselves.\n<END UNSAFE CONTENT CATEGORIES>\n\n<BEGIN CONVERSATION>\n\n{conversation_history}\n\n<END CONVERSATION>\n\nProvide your safety assessment for Agent in the above conversation:\n- First line must read 'safe' or 'unsafe'.\n- If unsafe, a second line must include a comma-separated list of violated categories. [/INST]" }
-    )
-    prediction.wait()
-    output = prediction.output
-
-    if output is not None and "unsafe" in output:
-        return False
-    else:
-        return True
-
 def get_num_tokens(prompt):
     """Get the number of tokens in a given prompt"""
     tokenizer = get_tokenizer()
     tokens = tokenizer.tokenize(prompt)
     return len(tokens)
 
-def abort_chat(error_message: str):
-    """Display an error message requiring the chat to be cleared. 
-    Forces a rerun of the app."""
-    assert error_message, "Error message must be provided."
-    error_message = f":red[{error_message}]"
-    if st.session_state.messages[-1]["role"] != "assistant":
-        st.session_state.messages.append({"role": "assistant", "content": error_message})
-    else:
-        st.session_state.messages[-1]["content"] = error_message
-    st.session_state.chat_aborted = True
-    st.rerun()
 
-def get_and_process_prompt():
-    """Get the user prompt and process it"""
-    # Generate a new response if last message is not from assistant
-    if st.session_state.messages[-1]["role"] != "assistant":
-        with st.chat_message("assistant", avatar="./Snowflake_Logomark_blue.svg"):
-            response = generate_arctic_response()
-            st.write_stream(response)
+METRIC_ASSISTANT_PROMPT = f"""
+You are a metric assistant. Building upon the following metrics 
+metadata, you are asked to retrieve the most relevant 1 or 2 metrics 
+that best answer the questions you get asked from the user.
 
-    if st.session_state.chat_aborted:
-        st.button('Reset chat', on_click=clear_chat_history, key="clear_chat_history")
-        st.chat_input(disabled=True)
-    elif prompt := st.chat_input():
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.rerun()
+You should answer the user by quoting the explicit metric name, enclosed with 
+backticks so it's easily parsable later, and also explain verbally why 
+the question matches this metric, most likely looking at the description.
 
+Metrics metadata: {METADATA}
+"""
+
+# Function for generating Snowflake Arctic response
 def generate_arctic_response():
-    """String generator for the Snowflake Arctic response."""
     prompt = []
+    prompt.append(METRIC_ASSISTANT_PROMPT)
     for dict_message in st.session_state.messages:
         if dict_message["role"] == "user":
             prompt.append("<|im_start|>user\n" + dict_message["content"] + "<|im_end|>")
@@ -130,29 +183,37 @@ def generate_arctic_response():
     prompt.append("<|im_start|>assistant")
     prompt.append("")
     prompt_str = "\n".join(prompt)
+    
+    if get_num_tokens(prompt_str) >= 3072:
+        st.error("Conversation length too long. Please keep it under 3072 tokens.")
+        st.button('Clear chat history', on_click=clear_chat_history, key="clear_chat_history")
+        st.stop()
 
-    num_tokens = get_num_tokens(prompt_str)
-    max_tokens = 1500
-    
-    if num_tokens >= max_tokens:
-        abort_chat(f"Conversation length too long. Please keep it under {max_tokens} tokens.")
-    
-    st.session_state.messages.append({"role": "assistant", "content": ""})
-    for event_index, event in enumerate(replicate.stream("snowflake/snowflake-arctic-instruct",
+    for event in replicate.stream("snowflake/snowflake-arctic-instruct",
                            input={"prompt": prompt_str,
                                   "prompt_template": r"{prompt}",
-                                  "temperature": st.session_state.temperature,
-                                  "top_p": st.session_state.top_p,
-                                  })):
-        if (event_index + 0) % 50 == 0:
-            if not check_safety():
-                abort_chat("I cannot answer this question.")
-        st.session_state.messages[-1]["content"] += str(event)
+                                  "temperature": temperature,
+                                  "top_p": top_p,
+                                  }):
         yield str(event)
 
-    # Final safety check...
-    if not check_safety():
-        abort_chat("I cannot answer this question.")
+# User-provided prompt
+if prompt := st.chat_input(disabled=not replicate_api):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user", avatar="🤔"):
+        st.write(prompt)
 
-if __name__ == "__main__":
-    main()
+# Generate a new response if last message is not from assistant
+if st.session_state.messages[-1]["role"] != "assistant":
+    with st.chat_message("assistant", avatar="📊"):
+        response = generate_arctic_response()
+        full_response = st.write_stream(response)
+    message = {"role": "assistant", "content": full_response}
+    st.session_state.messages.append(message)
+
+    metric_names = detect_backtick_enclosed_strings(full_response)
+
+    metrics = [m for m in METADATA if m["name"] in metric_names]
+    for metric in metrics:
+        with st.expander(f"Metric detected: `{metric['name']}`"):
+            st.plotly_chart(metric["chart_function"]())
