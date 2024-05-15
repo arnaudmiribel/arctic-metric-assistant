@@ -107,7 +107,7 @@ def detect_backtick_enclosed_strings(text: str) -> list:
     return list(dict.fromkeys(inline_code_substrings))
 
 st.caption("See [blog post](https://todo) · Powered by Snowflake Cortex and Arctic.")
-st.expander("What does this assistant knows?").json(METADATA)
+st.expander("What does this assistant know?").json(METADATA)
 # with st.expander("Lookup all metrics"):
 #     for metric in METADATA:
 #         st.write(f"**{metric['name'].replace('_', ' ').title()}** - {metric['description']}")
