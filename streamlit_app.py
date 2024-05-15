@@ -149,7 +149,6 @@ def what_does_this_assistant_know():
     st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
 
 if st.button("Learn more about what this assistant knows"):
-    st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
     what_does_this_assistant_know()
 
 
