@@ -101,8 +101,9 @@ metadata, you are asked to retrieve the most relevant 1 or 2 metrics
 that best answer the questions you get asked from the user.
 
 You should answer the user by quoting the explicit metric name, enclosed with 
-backticks so it's easily parsable later, and also explain verbally why 
-the question matches this metric, most likely looking at the description.
+backticks so it's easily parsable later, and also don't forget to
+explain verbally why the question matches this metric, most likely 
+looking at the description.
 
 Metrics metadata: 
 ```
@@ -137,7 +138,7 @@ st.caption("See [blog post](https://todo) · Powered by Snowflake Cortex and Arc
 
 WHAT_DOES_THIS_ASSISTANT_KNOW = f"""
 Here's what the Metric Assistant is given as a starter prompt. It includes 
-instrutions as well as factual metrics metadata:
+instructions as well as synthetic metrics metadata:
 
 ### Prompt:
 {METRIC_ASSISTANT_PROMPT}
@@ -150,11 +151,6 @@ def what_does_this_assistant_know():
 if st.button("Learn more on what this assistant knows"):
     st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
     what_does_this_assistant_know()
-# st.expander("What does this assistant know?").json(METADATA)
-# with st.expander("Lookup all metrics"):
-#     for metric in METADATA:
-#         st.write(f"**{metric['name'].replace('_', ' ').title()}** - {metric['description']}")
-#         st.plotly_chart(metric['chart_function'](), use_container_width=True)
 
 
 if 'REPLICATE_API_TOKEN' in st.secrets:
@@ -248,4 +244,4 @@ if st.session_state.messages[-1]["role"] != "assistant":
     metrics = [m for m in METADATA if m["name"] in metric_names]
     for metric in metrics:
         with st.expander(f"Metric detected: `{metric['name']}`"):
-            st.plotly_chart(metric["chart_function"]())
+            st.plotly_chart(metric["chart_function"](), use_container_width=True)
