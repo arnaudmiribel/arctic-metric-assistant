@@ -4,10 +4,12 @@ import os
 from transformers import AutoTokenizer
 
 # Set assistant icon to Snowflake logo
-icons = {"assistant": "./Snowflake_Logomark_blue.svg", "user": "⛷️"}
+icons = {"assistant": "📊", "user": "🤔"}
 
 # App title
-st.set_page_config(page_title="Snowflake Arctic")
+st.set_page_config(page_title="Metric Assistant")
+
+""" # Metric Assistant 📊 """
 
 import pandas as pd
 import numpy as np
@@ -104,8 +106,8 @@ def detect_backtick_enclosed_strings(text: str) -> list:
 
     return list(dict.fromkeys(inline_code_substrings))
 
-st.caption("**Metric Assistant** · See [blog post](https://todo) · Powered by Snowflake Cortex and Arctic.")
-st.expander("Lookup metadata").json(METADATA)
+st.caption("See [blog post](https://todo) · Powered by Snowflake Cortex and Arctic.")
+st.expander("What does this assistant knows?").json(METADATA)
 # with st.expander("Lookup all metrics"):
 #     for metric in METADATA:
 #         st.write(f"**{metric['name'].replace('_', ' ').title()}** - {metric['description']}")
@@ -200,12 +202,12 @@ def generate_arctic_response():
 # User-provided prompt
 if prompt := st.chat_input(disabled=not replicate_api):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="⛷️"):
+    with st.chat_message("user", avatar="🤔"):
         st.write(prompt)
 
 # Generate a new response if last message is not from assistant
 if st.session_state.messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant", avatar="./Snowflake_Logomark_blue.svg"):
+    with st.chat_message("assistant", avatar="📊"):
         response = generate_arctic_response()
         full_response = st.write_stream(response)
     message = {"role": "assistant", "content": full_response}
