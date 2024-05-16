@@ -69,7 +69,7 @@ def detect_backtick_enclosed_strings(text: str) -> list:
     import re
 
     # Pattern to find substrings between backticks
-    code_pattern = r"`(.*?)`"
+    code_pattern = r'`(.*?)`|"(.*?)"'
 
     # Find all substrings that match the patterns
     inline_code_substrings = re.findall(code_pattern, text)
