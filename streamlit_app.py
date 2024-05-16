@@ -53,27 +53,29 @@ instructions as well as synthetic metrics metadata:
 """
 
 
-def detect_backtick_enclosed_strings(text: str) -> list:
+def detect_backtick_or_double_quote_enclosed_strings(text: str) -> list:
     """
-    This function finds substrings enclosed between
-    backticks (`). Because the LLM is prompted to
-    enclose metric names between backticks, this is
-    then useful to identify metrics.
+    This function finds substrings enclosed between backticks (`) or double quotes (").
+    This is useful to identify metrics or code snippets in markdown-like text.
 
     Args:
-        text (str): The markdown text to be parsed
+        text (str): The text to be parsed
 
     Returns:
         list: A list with unique detected inline code substrings.
     """
     import re
 
-    # Pattern to find substrings between backticks
-    code_pattern = r'`|"(.*?)`|"'
+    # Pattern to find substrings between backticks or double quotes
+    code_pattern = r'`([^`]*)`|"([^"]*)"'
 
     # Find all substrings that match the patterns
-    inline_code_substrings = re.findall(code_pattern, text)
+    matches = re.findall(code_pattern, text)
 
+    # Flatten the list of tuples and filter out empty strings
+    inline_code_substrings = [match for group in matches for match in group if match]
+
+    # Remove duplicates while preserving order
     return list(dict.fromkeys(inline_code_substrings))
 
 
@@ -188,7 +190,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
         response = generate_arctic_response()
         full_response = st.write_stream(response)
 
-        detected_metrics = detect_backtick_enclosed_strings(full_response)
+        detected_metrics = detect_backtick_or_double_quote_enclosed_strings(full_response)
         matched_metrics = [
             metric for metric in METRICS_METADATA if metric.name in detected_metrics
         ]
