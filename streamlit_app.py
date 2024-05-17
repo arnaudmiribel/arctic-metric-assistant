@@ -127,7 +127,6 @@ if st.session_state.messages[-1].role == "user":
         full_response = st.write_stream(response)
 
         detected_metrics = detect_backtick_or_double_quote_enclosed_strings(full_response)
-        detected_metrics = detect_backtick_or_double_quote_enclosed_strings(full_response)
         matched_metrics = [
             metric for metric in METRICS_METADATA if metric.name in detected_metrics
         ]
