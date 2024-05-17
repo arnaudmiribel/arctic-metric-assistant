@@ -35,8 +35,10 @@ Metrics metadata:
 {json.dumps(PROMPT_METRICS_METADATA, indent=2)}
 """
 
-BLOG_POST_CONTEXT = """
-This app is the companion of a [blog post](https://todo) to illustrate 
+BLOG_POST_URL = "https://www.notion.so/snowflake-corp/Building-a-Metric-Assistant-with-Streamlit-and-Snowflake-Cortex-30946496aa9e4993b37822501a845f70#b72c9d998ebe4a17b8be01d613bd9152"
+
+BLOG_POST_CONTEXT = f"""
+This app is the companion of a [blog post]({BLOG_POST_URL}) to illustrate 
 how one can use Streamlit and Snowflake Arctic to easily set up an 
 AI assistant to help your colleagues self-serve metrics they care about.
 The data and metrics are all synthetic.
