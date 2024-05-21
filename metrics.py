@@ -71,13 +71,6 @@ def bar_chart(data: pd.DataFrame) -> alt.Chart:
         x=alt.X("yearmonthdate(Date)"), 
         y="Value",
     )
-    # return px.bar(
-    #     data, 
-    #     x="Date", 
-    #     y="Value", 
-    #     height=HEIGHT,
-    #     # title=title
-    # )
 
 
 # Define metadata for all metrics and instantiate them
