@@ -19,6 +19,9 @@ def get_num_tokens(prompt: str) -> int:
     return len(tokens)
 
 # Function for generating Snowflake Arctic response
+def generate_arctic_response(instruction_prompt:str) -> str:
+    return "Go for `Net Promoter Score`"
+
 def generate_arctic_response(instruction_prompt: str) -> Generator[str, None, None]:
     prompt_items = []
     prompt_items.append(instruction_prompt)
@@ -34,7 +37,7 @@ def generate_arctic_response(instruction_prompt: str) -> Generator[str, None, No
         st.error("Conversation length too long. Please keep it under 3072 tokens.")
         st.button(
             "Clear chat history",
-            on_click=lambda: st.session_state.clear() and st.rerun(),
+            on_click=lambda: st.session_state.clear(),
             key="clear_chat_history",
         )
         st.stop()

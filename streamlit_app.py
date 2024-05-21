@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import streamlit as st
 import json
 
 from messages import Message, detect_backtick_or_double_quote_enclosed_strings, show_metric_result
@@ -45,7 +44,7 @@ The data and metrics are all synthetic.
 """
 
 WHAT_DOES_THIS_ASSISTANT_KNOW = f"""
-## What does this assistant know?
+### What does this assistant know?
 Here's what the Metric Assistant is given as a starter prompt. It includes 
 instructions as well as synthetic metrics metadata:
 
@@ -58,11 +57,20 @@ instructions as well as synthetic metrics metadata:
 
 @st.experimental_dialog("Learn more", width="large")
 def learn_more() -> None:
+    st.markdown("## Learn more")
     st.markdown(BLOG_POST_CONTEXT)
     st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
 
-if st.button("Learn more"):
-    learn_more()
+left, right = st.columns((1, 2))
+
+with left:
+    with st.popover("Learn more", use_container_width=True):
+        st.markdown("## Learn more")
+        st.markdown(BLOG_POST_CONTEXT)
+        st.markdown(WHAT_DOES_THIS_ASSISTANT_KNOW)
+
+right.button("Clear history",  use_container_width=True, on_click=lambda: st.session_state.clear())
+
 
 """ # Metric Assistant """ 
 
@@ -99,7 +107,7 @@ for message in st.session_state.messages:
             button_placeholder = st.empty()
 
             def run_example(placeholder):
-                placeholder = st.empty()  # Clear the button placeholder
+                placeholder.empty()  # Clear the button placeholder
                 st.session_state.messages.append(
                     Message(role="user", content="What's our retention rate?")
                 ) 
