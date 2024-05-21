@@ -2,3 +2,4 @@ streamlit
 replicate
 transformers
 plotly
+streamlit-pills
