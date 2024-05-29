@@ -1,11 +1,6 @@
-# 🤖❄️ Snowflake Arctic Chatbot
-This Streamlit app is not just any chatbot; it's your starter kit to play with Snowflake's brand new foundation model: Snowflake Arctic! Arctic was released on April 24, 2024 and is completely open-source 😍
+# Metric Assistant
 
-Get the full lowdown on Arctic in Adrien Treuille's [blog post](http://blog.streamlit.io/introducing-snowflake-arctic/). Snowflake Arctic is also available via [Hugging Face](https://huggingface.co/Snowflake/snowflake-arctic-instruct) 🤗 and all your favorite model gardens soon! 🔜
-
-Built a cool Streamlit app using Arctic? Share it on social media with #SnowflakeArctic! We'll repost you 🫡
-
-![Streamlit app chatbot for Snowflake Arctic](Streamlit-Arctic-Screenshot.png)
+This is the repository for the companion app to the [Building a Metric Assistant with Streamlit and Snowflake Cortex](TBD) blog post.
 
 ## Getting your own Replicate API token
 
@@ -28,7 +23,7 @@ After creating a Replicate account, you can access your API token from [this pag
 
 2. **Install requirements**
    ```bash
-      pip install -r requirements.txt
+   pip install -r requirements.txt
    ```
 
 3. **Add your API token to your secrets file**\
@@ -48,18 +43,9 @@ Create a `.streamlit` folder with a `secrets.toml` file inside.
    Alternatively, you can enter your Replicate API token via the `st.text_input` widget in the app itself (once you're running the app).
 
 4. **Run the Streamlit app**
-Note: there are two versions of the app included in this repo. `simple_app.py` is a simpler app which passes user input to Arctic and returns Arctic's response. `streamlit_app.py` has built-in guardrails, meaning that it checks user input to ensure queries are safe (i.e. users are not asking Arctic for instructions on how to commit illegal activity, etc.).
-
-To run the version of the app that includes guardrails, enter:
    ```bash
    cd ..
    streamlit run streamlit_app.py
-   ```
-
-To run the simpler version of the app, enter:
-   ```bash
-   cd ..
-   streamlit run simple_app.py
    ```
 
 ### Deployment
