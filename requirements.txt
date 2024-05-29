@@ -1,5 +1,5 @@
-streamlit-nightly
-replicate
-transformers
+streamlit==1.35.0
 plotly
 streamlit-pills
+snowflake-snowpark-python
+snowflake-ml-python

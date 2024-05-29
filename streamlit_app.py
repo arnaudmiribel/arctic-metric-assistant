@@ -1,15 +1,21 @@
 import streamlit as st
-import os
 import json
 
 from messages import Message, detect_backtick_or_double_quote_enclosed_strings, show_metric_result
 from metrics import METRICS_METADATA
-from arctic import generate_arctic_response
+from arctic import generate_arctic_response_using_cortex
 
 st.set_page_config(
     page_title="Metric Assistant",
     page_icon="📊",
 )
+
+
+if "session" not in st.session_state:
+    session = st.connection("cortex").session()
+    session.sql("use warehouse ARCTIC_HACKATHON;").collect()
+    st.session_state["session"] = session
+
 
 PROMPT_METRICS_METADATA = {
     metric.name: metric.description for metric in METRICS_METADATA
@@ -76,20 +82,6 @@ right.button("Clear history",  use_container_width=True, on_click=lambda: st.ses
 
 st.caption(""":blue[Powered by **Snowflake Arctic**] ❄️""")
 
-
-# Make sure to pass a Replicate API Token
-if "REPLICATE_API_TOKEN" in st.secrets:
-    replicate_api = st.secrets["REPLICATE_API_TOKEN"]
-else:
-    replicate_api = st.text_input("Enter Replicate API token:", type="password")
-    if not (replicate_api.startswith("r8_") and len(replicate_api) == 40):
-        st.warning("Please enter your Replicate API token.", icon="⚠️")
-        st.markdown(
-            "**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one."
-        )
-
-os.environ["REPLICATE_API_TOKEN"] = replicate_api
-
 # Store LLM-generated responses
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [
@@ -124,7 +116,7 @@ for message in st.session_state.messages:
 
     
 # User-provided prompt
-if prompt := st.chat_input(disabled=not replicate_api):
+if prompt := st.chat_input():
     user_message = Message(role="user", content=prompt)
     st.session_state.messages.append(Message(role="user", content=prompt))
     with st.chat_message("user", avatar=user_message.avatar):
@@ -133,10 +125,12 @@ if prompt := st.chat_input(disabled=not replicate_api):
 # Generate a new assistant response if last message is from user
 if st.session_state.messages[-1].role == "user":
     with st.chat_message("assistant", avatar="📊"):
-        response = generate_arctic_response(METRIC_ASSISTANT_PROMPT)
-        full_response = st.write_stream(response)
 
-        detected_metrics = detect_backtick_or_double_quote_enclosed_strings(full_response)
+        with st.spinner("Looking at metrics..."):
+            response = generate_arctic_response_using_cortex(METRIC_ASSISTANT_PROMPT)
+            st.write(response)
+        
+        detected_metrics = detect_backtick_or_double_quote_enclosed_strings(response)
         matched_metrics = [
             metric for metric in METRICS_METADATA if metric.name in detected_metrics
         ]
@@ -144,5 +138,5 @@ if st.session_state.messages[-1].role == "user":
         for metric in matched_metrics:
             show_metric_result(metric)
 
-    message = Message(role="assistant", content=full_response, metrics=matched_metrics)
+    message = Message(role="assistant", content=response, metrics=matched_metrics)
     st.session_state.messages.append(message)
