@@ -139,13 +139,19 @@ if st.session_state.messages[-1].role == "user":
             response = f"""Sorry, the LLM was deactivated!"""
             st.write(response)
         
-        detected_metrics = detect_backtick_or_double_quote_enclosed_strings(response)
-        matched_metrics = [
-            metric for metric in METRICS_METADATA if metric.name in detected_metrics
-        ]
+        # Deactivate demo
+        # detected_metrics = detect_backtick_or_double_quote_enclosed_strings(response)
+        # matched_metrics = [
+        #     metric for metric in METRICS_METADATA if metric.name in detected_metrics
+        # ]
         
-        for metric in matched_metrics:
-            show_metric_result(metric)
+        # for metric in matched_metrics:
+        #     show_metric_result(metric)
 
-    message = Message(role="assistant", content=response, metrics=matched_metrics)
+    message = Message(
+        role="assistant", 
+        content=response, 
+        # metrics=matched_metrics,
+    )
+    
     st.session_state.messages.append(message)
