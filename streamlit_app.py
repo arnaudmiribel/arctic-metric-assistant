@@ -1,3 +1,4 @@
+import random
 import streamlit as st
 import json
 
@@ -11,10 +12,11 @@ st.set_page_config(
 )
 
 
-if "session" not in st.session_state:
-    session = st.connection("cortex").session()
-    session.sql("use warehouse ARCTIC_HACKATHON;").collect()
-    st.session_state["session"] = session
+# Deactivate demo
+# if "session" not in st.session_state:
+#     session = st.connection("cortex").session()
+#     session.sql("use warehouse ARCTIC_HACKATHON;").collect()
+#     st.session_state["session"] = session
 
 
 PROMPT_METRICS_METADATA = {
@@ -127,7 +129,11 @@ if st.session_state.messages[-1].role == "user":
     with st.chat_message("assistant", avatar="📊"):
 
         with st.spinner("Looking at metrics..."):
-            response = generate_arctic_response_using_cortex(METRIC_ASSISTANT_PROMPT)
+            # Deactivate demo
+            # response = generate_arctic_response_using_cortex(METRIC_ASSISTANT_PROMPT)
+            response = f"""Sorry, the LLM was deactivated! I'll just return a random 
+            metric: `{METRICS_METADATA[random.randint(1, 8)].name}`. Visit this app's 
+            repo to deploy your very own LLM!"""
             st.write(response)
         
         detected_metrics = detect_backtick_or_double_quote_enclosed_strings(response)
