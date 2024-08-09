@@ -4,7 +4,6 @@ import json
 
 from messages import Message, detect_backtick_or_double_quote_enclosed_strings, show_metric_result
 from metrics import METRICS_METADATA
-from arctic import generate_arctic_response_using_cortex
 
 st.set_page_config(
     page_title="Metric Assistant",
