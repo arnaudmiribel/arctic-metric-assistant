@@ -11,6 +11,11 @@ st.set_page_config(
 )
 
 
+st.info("""Dear visitor, this demo was turned off! Head over to this app's repo
+        (there is a GitHub button in the top-right corner) to learn more.""", icon=":material/info:")
+
+st.divider()
+
 # Deactivate demo
 # if "session" not in st.session_state:
 #     session = st.connection("cortex").session()
@@ -110,9 +115,10 @@ for message in st.session_state.messages:
                 on_click=lambda: run_example(button_placeholder),
             )
         
-        if message.role == "assistant":
-            for metric in message.metrics:
-                show_metric_result(metric)
+        # Deactivate demo
+        # if message.role == "assistant":
+        #     for metric in message.metrics:
+        #         show_metric_result(metric)
             
 
     
@@ -130,9 +136,7 @@ if st.session_state.messages[-1].role == "user":
         with st.spinner("Looking at metrics..."):
             # Deactivate demo
             # response = generate_arctic_response_using_cortex(METRIC_ASSISTANT_PROMPT)
-            response = f"""Sorry, the LLM was deactivated! I'll just return a random 
-            metric: `{METRICS_METADATA[random.randint(1, 8)].name}`. Visit this app's 
-            repo to deploy your very own LLM!"""
+            response = f"""Sorry, the LLM was deactivated!"""
             st.write(response)
         
         detected_metrics = detect_backtick_or_double_quote_enclosed_strings(response)
